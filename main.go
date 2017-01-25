@@ -9,7 +9,8 @@ import (
 )
 
 type config struct {
-	File string `cfg:"file"`
+	File   string `cfg:"file"`
+	Decode bool   `cfg:"decode" cfgDefault:"true"`
 }
 
 func main() {
