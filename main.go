@@ -10,7 +10,7 @@ import (
 
 type config struct {
 	File   string `cfg:"file"`
-	Decode bool   `cfg:"decode" cfgDefault:"true"`
+	Decode bool   `cfg:"decode" cfgDefault:"false"`
 }
 
 func main() {
@@ -23,6 +23,8 @@ func main() {
 		return
 	}
 
+	//fmt.Printf("%#v\n", cfg)
+
 	if cfg.File == "" {
 		goConfig.Usage()
 		return
@@ -34,8 +36,15 @@ func main() {
 		return
 	}
 
-	encoded := base64.StdEncoding.EncodeToString(buff)
-
-	fmt.Println(encoded)
+	if cfg.Decode {
+		decode, err := base64.StdEncoding.DecodeString(string(buff))
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Print(decode)
+	} else {
+		encoded := base64.StdEncoding.EncodeToString(buff)
+		fmt.Println(encoded)
+	}
 
 }
