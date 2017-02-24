@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 
 	"github.com/crgimenes/goConfig"
@@ -10,6 +9,7 @@ import (
 
 type config struct {
 	File   string `cfg:"file"`
+	output string `cfg:"output" cfgDefault:"-"`
 	Decode bool   `cfg:"decode" cfgDefault:"false"`
 }
 
@@ -19,11 +19,9 @@ func main() {
 	goConfig.PrefixEnv = "BASE64"
 	err := goConfig.Parse(&cfg)
 	if err != nil {
-		fmt.Println(err)
+		println(err)
 		return
 	}
-
-	//fmt.Printf("%#v\n", cfg)
 
 	if cfg.File == "" {
 		goConfig.Usage()
@@ -32,19 +30,41 @@ func main() {
 
 	buff, err := ioutil.ReadFile(cfg.File)
 	if err != nil {
-		fmt.Println(err)
+		println(err)
 		return
 	}
 
+	var outBuff []byte
 	if cfg.Decode {
-		decode, err := base64.StdEncoding.DecodeString(string(buff))
+		outBuff, err = base64.StdEncoding.DecodeString(string(buff))
 		if err != nil {
-			fmt.Println(err)
+			println(err)
+			return
 		}
-		fmt.Print(decode)
+		if cfg.output == "-" {
+			println(outBuff)
+		} else {
+			err = saveFile(cfg.output, outBuff)
+			if err != nil {
+				println(err)
+				return
+			}
+		}
 	} else {
-		encoded := base64.StdEncoding.EncodeToString(buff)
-		fmt.Println(encoded)
+		base64.StdEncoding.Encode(outBuff, buff)
+		if cfg.output == "-" {
+			println(outBuff)
+		} else {
+			err = saveFile(cfg.output, outBuff)
+			if err != nil {
+				println(err)
+				return
+			}
+		}
 	}
+}
 
+func saveFile(fineName string, value []byte) (err error) {
+	err = ioutil.WriteFile(fineName, value, 0644)
+	return
 }
