@@ -9,7 +9,7 @@ import (
 
 type config struct {
 	File   string `cfg:"file"`
-	output string `cfg:"output" cfgDefault:"-"`
+	Output string `cfg:"output" cfgDefault:"-"`
 	Decode bool   `cfg:"decode" cfgDefault:"false"`
 }
 
@@ -41,10 +41,10 @@ func main() {
 			println(err)
 			return
 		}
-		if cfg.output == "-" {
+		if cfg.Output == "-" {
 			println(outBuff)
 		} else {
-			err = saveFile(cfg.output, outBuff)
+			err = saveFile(cfg.Output, outBuff)
 			if err != nil {
 				println(err)
 				return
@@ -52,10 +52,10 @@ func main() {
 		}
 	} else {
 		base64.StdEncoding.Encode(outBuff, buff)
-		if cfg.output == "-" {
+		if cfg.Output == "-" {
 			println(outBuff)
 		} else {
-			err = saveFile(cfg.output, outBuff)
+			err = saveFile(cfg.Output, outBuff)
 			if err != nil {
 				println(err)
 				return
