@@ -4,5 +4,5 @@ Simple Base64 file conversion
 ## Install
 
 ```
-go install github.com/crgimenes/b64
+go get github.com/crgimenes/b64
 ```
