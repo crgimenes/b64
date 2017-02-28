@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,21 +20,26 @@ type config struct {
 var errFileNotDefined = errors.New("Input file not defined")
 var cfg config
 
-func run() (err error) {
+func run() (outBuff []byte, err error) {
 	if cfg.File == "" {
-		err = errFileNotDefined
-		return
+		lastPar := flag.NArg() - 1
+		cfg.File = flag.Arg(lastPar)
+		if cfg.File == "" {
+			err = errFileNotDefined
+			return
+		}
 	}
 
 	var buff []byte
 	buff, err = ioutil.ReadFile(cfg.File)
+
 	if err != nil {
 		return
 	}
 
-	var outBuff []byte
 	if cfg.Decode {
-		outBuff, err = base64.StdEncoding.DecodeString(string(buff))
+		outBuff = make([]byte, base64.StdEncoding.DecodedLen(len(buff)))
+		_, err = base64.StdEncoding.Decode(outBuff, buff)
 		if err != nil {
 			return
 		}
@@ -44,24 +50,26 @@ func run() (err error) {
 
 	if cfg.Output == "-" {
 		fmt.Println(string(outBuff))
-		return nil
+		return
 	}
-	return ioutil.WriteFile(cfg.Output, outBuff, 0644)
+	err = ioutil.WriteFile(cfg.Output, outBuff, 0644)
+
+	return
 }
 
-func configAndRun() error {
+func configAndRun() (err error) {
 	goConfig.PrefixEnv = "BASE64"
-	if err := goConfig.Parse(&cfg); err != nil {
-		return err
+	err = goConfig.Parse(&cfg)
+	if err != nil {
+		return
 	}
-	return run()
+	_, err = run()
+	return
 }
 
 func main() {
-	err := configAndRun()
-	if err != nil {
+	if err := configAndRun(); err != nil {
 		println(err.Error())
-		goConfig.Usage()
 		os.Exit(1)
 	}
 }
