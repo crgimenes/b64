@@ -2,7 +2,10 @@ package main
 
 import (
 	"encoding/base64"
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"os"
 
 	"github.com/crgimenes/goConfig"
 )
@@ -13,24 +16,18 @@ type config struct {
 	Decode bool   `cfg:"decode" cfgDefault:"false"`
 }
 
-func main() {
-	cfg := config{}
+var errFileNotDefined = errors.New("Input file not defined")
+var cfg config
 
-	goConfig.PrefixEnv = "BASE64"
-	err := goConfig.Parse(&cfg)
-	if err != nil {
-		println(err)
-		return
-	}
-
+func run() (err error) {
 	if cfg.File == "" {
-		goConfig.Usage()
+		err = errFileNotDefined
 		return
 	}
 
-	buff, err := ioutil.ReadFile(cfg.File)
+	var buff []byte
+	buff, err = ioutil.ReadFile(cfg.File)
 	if err != nil {
-		println(err)
 		return
 	}
 
@@ -38,33 +35,33 @@ func main() {
 	if cfg.Decode {
 		outBuff, err = base64.StdEncoding.DecodeString(string(buff))
 		if err != nil {
-			println(err)
 			return
 		}
-		if cfg.Output == "-" {
-			println(outBuff)
-		} else {
-			err = saveFile(cfg.Output, outBuff)
-			if err != nil {
-				println(err)
-				return
-			}
-		}
 	} else {
+		outBuff = make([]byte, base64.StdEncoding.EncodedLen(len(buff)))
 		base64.StdEncoding.Encode(outBuff, buff)
-		if cfg.Output == "-" {
-			println(outBuff)
-		} else {
-			err = saveFile(cfg.Output, outBuff)
-			if err != nil {
-				println(err)
-				return
-			}
-		}
 	}
+
+	if cfg.Output == "-" {
+		fmt.Println(string(outBuff))
+		return nil
+	}
+	return ioutil.WriteFile(cfg.Output, outBuff, 0644)
 }
 
-func saveFile(fineName string, value []byte) (err error) {
-	err = ioutil.WriteFile(fineName, value, 0644)
-	return
+func configAndRun() error {
+	goConfig.PrefixEnv = "BASE64"
+	if err := goConfig.Parse(&cfg); err != nil {
+		return err
+	}
+	return run()
+}
+
+func main() {
+	err := configAndRun()
+	if err != nil {
+		println(err.Error())
+		goConfig.Usage()
+		os.Exit(1)
+	}
 }
