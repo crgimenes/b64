@@ -15,7 +15,7 @@ In my work I need from time to time to convert a file to base64 to send via a RE
 ## Install
 
 ```
-go get github.com/crgimenes/b64
+go get github.com/go-br/b64
 ```
 
 ## Examples of use
