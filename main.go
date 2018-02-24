@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/crgimenes/goConfig"
+	"github.com/crgimenes/goconfig"
 )
 
 type config struct {
@@ -58,8 +58,8 @@ func run() (outBuff []byte, err error) {
 }
 
 func configAndRun() (err error) {
-	goConfig.PrefixEnv = "BASE64"
-	err = goConfig.Parse(&cfg)
+	goconfig.PrefixEnv = "BASE64"
+	err = goconfig.Parse(&cfg)
 	if err != nil {
 		return
 	}
